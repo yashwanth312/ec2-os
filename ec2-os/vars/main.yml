@@ -1,0 +1,10 @@
+---
+# vars file for master
+#
+
+mykey: "key-ansible"  #key-pair name
+inst_type: "t2.micro"    #Instance type 
+img_id: "ami-0df612970f825f04c"   #Image ID
+sec_group: "sg-0815668e6420f5d3e"   #Security Group Name
+subnet_id: "subnet-c0f2b5a8"   #Subnet ID
+reg: "ca-central-1"   #Region

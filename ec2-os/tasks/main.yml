@@ -1,0 +1,61 @@
+---
+# tasks file for ec2
+#
+
+- name: Provisioning OS from AWS (EC2)
+  ec2:
+      key_name: "{{ mykey }}" 
+      instance_type: "{{ inst_type }}"
+      image: "{{ img_id }}"
+      wait: yes
+      count: 1
+      vpc_subnet_id: "{{ subnet_id }}"
+      assign_public_ip: yes
+      region: "{{ reg }}"
+      state: present
+      group_id: "{{ sec_group }}"
+      aws_access_key: "{{ access }}"
+      aws_secret_key: "{{ secret }}"
+      instance_tags:
+        Name: K8s-Master
+  register: master_metadata
+- name: Printing the info of master
+  debug:
+          var: master_metadata.instances[0].public_ip
+
+- name: Provisioning workernode OS from AWS (EC2)
+  ec2:
+      key_name: "{{ mykey }}"
+      instance_type: "{{ inst_type }}"
+      image: "{{ img_id }}"
+      wait: yes
+      count: 2
+      vpc_subnet_id: "{{ subnet_id }}"
+      assign_public_ip: yes
+      region: "{{ reg }}"
+      state: present
+      group_id: "{{ sec_group }}"
+      aws_access_key: "{{ access }}"
+      aws_secret_key: "{{ secret }}"
+      instance_tags:
+        Name: K8s-WorkerNode
+  register: workernode_metadata
+- name: Printing the info of workernode-1
+  debug:
+    var: workernode_metadata.instances[0].public_ip
+- name: Prinitng the info of workernode-2
+  debug: 
+    var: workernode_metadata.instances[1].public_ip
+
+
+- name: Updating the inventory with master and worker node IPs
+  blockinfile: 
+    path: inventory
+    content: | 
+            [master]
+            {{ master_metadata.instances[0].public_ip }}  ansible_user=ec2-user
+
+            [workernode]
+            {{ workernode_metadata.instances[0].public_ip }}   ansible_user=ec2-user
+            {{ workernode_metadata.instances[1].public_ip }}   ansible_user=ec2-user
+
